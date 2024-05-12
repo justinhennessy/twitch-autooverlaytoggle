@@ -1,0 +1,10 @@
+overlays:
+  - name: "SideCam"
+    on_shortcut: ["f1"]
+    off_shortcut: ["f2"]
+    delay: 60
+  - name: "Guitar Zoom"
+    on_shortcut: ["f3"]
+    off_shortcut: ["f4"]
+    delay: 15
+all_off_delay: 60

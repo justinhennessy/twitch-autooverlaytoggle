@@ -1,62 +1,33 @@
-import pyautogui
+from config import load_config
 import time
-import sys
 
-class ObsOverlay:
-    def __init__(self, name: str, on_shortcut: list, off_shortcut: list, delay: int = 10):
-        self.name = name
-        self.on_shortcut = on_shortcut
-        self.off_shortcut = off_shortcut
-        self.delay = delay
-
-    def _trigger_hotkey(self, shortcut):
-        original_stdout = sys.stdout
-        sys.stdout = open('/dev/null', 'w')
-        pyautogui.hotkey(*shortcut, _pause=False)
-        sys.stdout = original_stdout  # Restore stdout
-        time.sleep(0.1)  # Introduce a short delay after each key press
-
-    def on(self):
-        self._trigger_hotkey(self.on_shortcut)
-        # Implement your logic for turning on the overlay
-        print(f"{self.name} overlay turned on")
-
-    def off(self):
-        self._trigger_hotkey(self.off_shortcut)
-        # Implement your logic for turning off the overlay
-        print(f"{self.name} overlay turned off")
-
-    def set_delay(self, delay: int):
-        self.delay = delay
-
-class ObsScene:
-    def __init__(self, overlays: list):
-        self.overlays = overlays
-        self.current_index = 0
-
-    def next(self):
-        next_index = (self.current_index + 1) % len(self.overlays)
-        return self.overlays[next_index].name
-
-    def switch_to_next(self):
-        self.overlays[self.current_index].off()
-        self.current_index = (self.current_index + 1) % len(self.overlays)
-        self.overlays[self.current_index].on()
-
-    def current_overlay_name(self):
-        return self.overlays[self.current_index].name
-
-# Example usage:
-overlay1 = ObsOverlay("SideCam", ["f1"], ["f2"], delay=10)
-overlay2 = ObsOverlay("Guitar Zoom", ["f3"], ["f4"], delay=5)
-
-scene = ObsScene([overlay1, overlay2])
+scene, all_off_delay = load_config()
 
 while True:
-    scene.switch_to_next()
-    remaining_time = scene.overlays[scene.current_index].delay
-    next_overlay_name = scene.next()  # Retrieve the name of the next overlay
+    current_overlay = scene.overlays[scene.current_index]
+    current_overlay.on()
+
+    # Countdown for the current overlay
+    print(f"Turning on {current_overlay.name} for {current_overlay.delay} seconds...")
+    remaining_time = current_overlay.delay
     while remaining_time > 0:
-        print(f"Next change to {next_overlay_name} in {remaining_time} seconds", end='\r')
+        print(f"Next change: All overlays will turn off in {remaining_time} seconds", end='\r')
         time.sleep(1)
         remaining_time -= 1
+
+    # Countdown for the period when all overlays are off
+    print(f"Turning off all overlays for {all_off_delay} seconds...")
+    remaining_time = all_off_delay
+
+    # Turn off all overlays
+    for overlay in scene.overlays:
+        overlay.off()
+
+    next_overlay_name = scene.next()
+    while remaining_time > 0:
+        print(f"Next change: {next_overlay_name} will turn on in {remaining_time} seconds", end='\r')
+        time.sleep(1)
+        remaining_time -= 1
+
+    # Move to the next overlay
+    scene.current_index = (scene.current_index + 1) % len(scene.overlays)
