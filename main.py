@@ -1,7 +1,7 @@
-from config import load_config
 import time
+from config import load_config
 
-scene, all_off_delay = load_config()
+scene, all_off_delay = load_config('config.yaml')
 
 while True:
     current_overlay = scene.overlays[scene.current_index]

@@ -1,3 +1,3 @@
 #!/bin/bash
 
-clear; python auto_switch.py
+clear; python main.py
